@@ -400,7 +400,9 @@ router.post("/chat", authMiddleware, verificarPermisos(), async (req, res) => {
           const mesStr = matchFechaDisponible[2].toLowerCase();
           const mes = MESES[mesStr];
           const anio = new Date().getFullYear();
-          fechaFin = new Date(anio, mes, dia, 23, 59, 0).toISOString();
+          // Bug fix: MySQL no acepta ISO con 'Z'. Formatear como 'YYYY-MM-DD HH:MM:SS'
+          const d = new Date(anio, mes, dia, 23, 59, 0);
+          fechaFin = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} 23:59:00`;
         }
         // "hasta mañana" → fecha fin = mañana a las 23:59
         if (
@@ -411,8 +413,8 @@ router.post("/chat", authMiddleware, verificarPermisos(), async (req, res) => {
         ) {
           const manana = new Date();
           manana.setDate(manana.getDate() + 1);
-          manana.setHours(23, 59, 0, 0);
-          fechaFin = manana.toISOString();
+          // Bug fix: MySQL no acepta ISO con 'Z'. Formatear como 'YYYY-MM-DD HH:MM:SS'
+          fechaFin = `${manana.getFullYear()}-${String(manana.getMonth() + 1).padStart(2, "0")}-${String(manana.getDate()).padStart(2, "0")} 23:59:00`;
         }
 
         idMemoria = await memoriasService.crearMemoria({
@@ -430,6 +432,10 @@ router.post("/chat", authMiddleware, verificarPermisos(), async (req, res) => {
         console.warn("⚠️ [admin] No se pudo guardar memoria:", memErr.message);
       }
     }
+
+    // Bug fix: declarar 'resultado' ANTES de cualquier bloque que lo use
+    // (evita ReferenceError por zona temporal de 'let')
+    let resultado;
 
     // ---- Si es SOLO memoria (no notificación masiva) → responder y terminar ----
     if (
@@ -449,14 +455,12 @@ router.post("/chat", authMiddleware, verificarPermisos(), async (req, res) => {
         respuesta: confirmacion,
         herramienta: "memoria_agente",
         clasificacion: "memoria_guardada",
-        tiempo_ms: Date.now() - Date.now(),
+        tiempo_ms: 0,
         memoria_id: idMemoria,
       };
 
       return { ...resultado, sesion_id: sesionId };
     }
-
-    let resultado;
 
     // Si es comando de notificación y el usuario tiene permisos, procesarlo
     if (
