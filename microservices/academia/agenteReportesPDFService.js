@@ -48,14 +48,14 @@ function dibujarEncabezado(doc, titulo, subtitulo) {
 
   doc
     .fillColor("white")
-    .fontSize(17)
+    .fontSize(15)
     .font("Helvetica-Bold")
-    .text("UNIDAD EDUCATIVA EMI", 40, 14, { align: "left" });
+    .text("UNIDAD EDUCATIVA SINAI MONTESSORI", 40, 14, { align: "left" });
 
   doc
-    .fontSize(10)
+    .fontSize(9)
     .font("Helvetica")
-    .text("Sistema de Gestión Educativa", 40, 37);
+    .text("Sistema de Gestión Educativa", 40, 36);
 
   const ahora = new Date().toLocaleString("es-BO", {
     day: "2-digit",
@@ -108,12 +108,16 @@ function dibujarPiePagina(doc) {
     .fontSize(7)
     .font("Helvetica")
     .text(
-      "Unidad Educativa EMI — Documento generado automáticamente por el Agente Inteligente",
+      "Unidad Educativa Sinai Montessori — Documento generado automáticamente por el Agente Inteligente",
       40,
       H - 20,
       { align: "left" },
     )
     .text("CONFIDENCIAL", W - 110, H - 20, { width: 70, align: "right" });
+  // 🔧 Restablecer doc.y para evitar que PDFKit agregue páginas en blanco adicionales
+  // Si doc.y está cerca del fondo, PDFKit auto-agrega una página extra
+  // Lo fijamos justo arriba del footer para que no haya desbordamiento
+  doc.y = H - 35;
 }
 
 // ────────────────────────────────────────────────
@@ -310,22 +314,26 @@ async function generarReporteEstudiantesPorNivel({
     ],
   });
 
-  // Resumen por nivel
+  // Resumen por nivel — solo si hay espacio suficiente (evitar página en blanco)
   const byNivel = {};
   rows.forEach((r) => {
     const k = r.nivel_nombre || "Sin nivel";
     byNivel[k] = (byNivel[k] || 0) + 1;
   });
-  doc.moveDown(0.5);
-  doc
-    .fillColor(COLORS.primary)
-    .fontSize(9)
-    .font("Helvetica-Bold")
-    .text("Resumen:", 40);
-  doc.font("Helvetica").fontSize(8).fillColor(COLORS.text);
-  Object.entries(byNivel).forEach(([k, v]) =>
-    doc.text(`  • ${k}: ${v} estudiante(s)`, 40),
-  );
+  const lineasResumen = Object.keys(byNivel).length;
+  const espacioNecesario = 20 + lineasResumen * 14 + 40; // título + filas + margen
+  if (doc.y + espacioNecesario < doc.page.height - 70) {
+    doc.moveDown(0.3);
+    doc
+      .fillColor(COLORS.primary)
+      .fontSize(9)
+      .font("Helvetica-Bold")
+      .text("Resumen:", 40);
+    doc.font("Helvetica").fontSize(8).fillColor(COLORS.text);
+    Object.entries(byNivel).forEach(([k, v]) =>
+      doc.text(`  • ${k}: ${v} estudiante(s)`, 40),
+    );
+  }
 
   dibujarPiePagina(doc);
   doc.end();
@@ -485,25 +493,21 @@ async function generarReportePagosPendientes({
     cellColor: { 8: estadoColor },
   });
 
-  // Barra de total
-  const barY = doc.y + 4;
-  doc
-    .rect(
-      40,
-      barY,
-      colWidths.reduce((a, b) => a + b, 0),
-      22,
-    )
-    .fill(COLORS.primary);
-  doc
-    .fillColor("white")
-    .fontSize(10)
-    .font("Helvetica-Bold")
-    .text(`TOTAL PENDIENTE: ${formatMonto(totalPendiente)}`, 44, barY + 5, {
-      width: colWidths.reduce((a, b) => a + b, 0) - 8,
-      align: "right",
-    });
-  doc.y = barY + 28;
+  // Barra de total — solo si hay espacio (evitar páginas en blanco)
+  const anchoTotal = colWidths.reduce((a, b) => a + b, 0);
+  if (doc.y + 34 < doc.page.height - 70) {
+    const barY = doc.y + 4;
+    doc.rect(40, barY, anchoTotal, 22).fill(COLORS.primary);
+    doc
+      .fillColor("white")
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .text(`TOTAL PENDIENTE: ${formatMonto(totalPendiente)}`, 44, barY + 5, {
+        width: anchoTotal - 8,
+        align: "right",
+      });
+    doc.y = barY + 26;
+  }
 
   dibujarPiePagina(doc);
   doc.end();
@@ -582,12 +586,15 @@ async function generarResumenInscripciones({ gestion_academica }) {
     hAlign: ["left", "center", "center", "center", "right"],
   });
 
-  doc.moveDown(0.5);
-  doc
-    .fillColor(COLORS.primary)
-    .fontSize(11)
-    .font("Helvetica-Bold")
-    .text(`TOTAL GENERAL: ${total} estudiante(s) en la gestión ${anio}`, 40);
+  // Total general — solo si hay espacio
+  if (doc.y + 30 < doc.page.height - 70) {
+    doc.moveDown(0.4);
+    doc
+      .fillColor(COLORS.primary)
+      .fontSize(11)
+      .font("Helvetica-Bold")
+      .text(`TOTAL GENERAL: ${total} estudiante(s) en la gestión ${anio}`, 40);
+  }
 
   dibujarPiePagina(doc);
   doc.end();
