@@ -19,6 +19,7 @@ const { ejecutarAgente } = require('./agenteInteligente');
 const ConversacionManager = require('./conversacionManager');
 const fs = require('fs');
 const path = require('path');
+const { obtenerConfigPuppeteerWhatsApp } = require('./whatsappPuppeteerConfig');
 
 // Instancia del gestor de conversaciones para WhatsApp
 const conversacionManager = new ConversacionManager(pool);
@@ -239,21 +240,7 @@ class WhatsAppService {
         authStrategy: new LocalAuth({
           dataPath: path.join(process.cwd(), '.wwebjs_auth')
         }),
-        puppeteer: {
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--disable-gpu',
-            '--disable-web-security',
-            '--disable-features=IsolateOrigins,site-per-process'
-          ],
-          timeout: 60000 // Aumentar timeout a 60 segundos
-        }
+        puppeteer: obtenerConfigPuppeteerWhatsApp()
       });
 
       // Evento QR - se dispara cuando se genera un nuevo QR

@@ -11,5 +11,7 @@ module.exports = {
   DB_PASSWORD: '',
   DB_NAME: '',
   DB_PORT: 3306,
-  PUBLIC_FRONTEND_URL: ''
+  PUBLIC_FRONTEND_URL: '',
+  // Opcional en Windows: ruta a Edge, Brave o Chrome
+  // WHATSAPP_BROWSER_PATH: 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
 };
