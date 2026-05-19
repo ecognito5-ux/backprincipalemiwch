@@ -504,39 +504,22 @@ const herramientaGenerarDocumentoAsistencia = new Tool({
         anio: resultado.año
       };
       
-      // Retornar información del documento generado con instrucciones de descarga
-      return `✅ **Documento de asistencia generado exitosamente**
+       // Retornar información del documento generado con instrucciones de descarga
+       return `✅ **Documento de asistencia generado exitosamente**
+ 
+ 📄 **Detalles del documento:**
+ • Formato: ${formato.toUpperCase()}
+ • Nivel: ${resultado.nivel || 'Todos'}
+ • Turno: ${resultado.turno || 'Todos'}
+ • Año: ${resultado.anio}
 
-📄 **Detalles del documento:**
-• Formato: ${formato.toUpperCase()}
-• Nivel: ${resultado.nivel || 'Todos'}
-• Turno: ${resultado.turno || 'Todos'}
-• Año: ${resultado.año}
-• Total estudiantes: ${resultado.totalEstudiantes}
-• Nombre archivo: ${resultado.nombreArchivo}
-
-📥 **Para descargar el documento:**
-El documento ha sido generado exitosamente. Para descargarlo, realiza una petición POST a:
-\`/api/ai-admin-langchain/generar-asistencia\`
-
-Con los siguientes parámetros:
-• nivel: "${resultado.nivel || 'Todos'}"
-• turno: "${resultado.turno || null}"
-• formato: "${formato}"
-• anio: ${resultado.año}
-
-**Nota**: El documento incluye una tabla con:
-- Número de orden
-- Nombre completo del estudiante
-- CI del estudiante
-- Curso
-- Columnas para marcar "Asistió" (☐) y "No Asistió" (☐)
-
-El documento está listo para imprimir y usar en clase. Puedes descargarlo directamente desde el sistema.`;
+ El documento está listo para ser descargado desde el panel.`;
     } catch (error) {
       console.error('Error en herramienta generar documento asistencia:', error);
       return `Error al generar documento de asistencia: ${error.message}`;
     }
+  }
+
   }
 });
 
