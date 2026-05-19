@@ -242,7 +242,7 @@ async function generarReporteEstudiantesPorNivel({
     };
   }
 
-  const nombreArchivo = `estudiantes_${(nivel_nombre || "todos").replace(/\s+/g, "_")}_${turno_label || "all"}_${anio}_${Date.now()}.pdf`;
+  const nombreArchivo = `estudiantes-${(nivel_nombre || "todos").replace(/\s+/g, "-")}-${turno_label || "all"}-${anio}-${Date.now()}.pdf`;
   const rutaPDF = path.join(REPORTES_DIR, nombreArchivo);
 
   const doc = new PDFDocument({ margin: 40, size: "A4", layout: "landscape" });
@@ -418,7 +418,7 @@ async function generarReportePagosPendientes({
     0,
   );
 
-  const nombreArchivo = `pagos_pendientes_${(nivel_nombre || "todos").replace(/\s+/g, "_")}_${anio}_${Date.now()}.pdf`;
+  const nombreArchivo = `pagos-pendientes-${(nivel_nombre || "todos").replace(/\s+/g, "-")}-${anio}-${Date.now()}.pdf`;
   const rutaPDF = path.join(REPORTES_DIR, nombreArchivo);
 
   const doc = new PDFDocument({ margin: 40, size: "A4", layout: "landscape" });
@@ -557,7 +557,7 @@ async function generarResumenInscripciones({ gestion_academica }) {
   );
   const total = totRow[0]?.total || 0;
 
-  const nombreArchivo = `resumen_inscripciones_${anio}_${Date.now()}.pdf`;
+  const nombreArchivo = `resumen-inscripciones-${anio}-${Date.now()}.pdf`;
   const rutaPDF = path.join(REPORTES_DIR, nombreArchivo);
 
   const doc = new PDFDocument({ margin: 40, size: "A4" });
